@@ -1,8 +1,8 @@
-# Contributing to mim-it
+# Contributing to mimit
 
-Thank you for helping make mim-it a better community project.
+Thank you for helping make mimit a better community project.
 
-mim-it is an independent, community-led continuation of [georapbox/meme-generator](https://github.com/georapbox/meme-generator). We build on the upstream project's work and preserve its original attribution and license. Contributions to this repository help shape the future of this fork.
+mimit is an independent, community-led continuation of [georapbox/meme-generator](https://github.com/georapbox/meme-generator). We build on the upstream project's work and preserve its original attribution and license. Contributions to this repository help shape the future of this fork.
 
 ## Ways to contribute
 
