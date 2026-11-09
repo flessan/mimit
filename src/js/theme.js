@@ -40,8 +40,15 @@
       root.style.removeProperty('--theme-origin-y');
     };
 
-    if (typeof document.startViewTransition === 'function' &&
-        !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      update();
+      cleanUpOrigin();
+      return;
+    }
+
+    if (typeof document.startViewTransition === 'function') {
       try {
         const transition = document.startViewTransition(update);
         transition.finished.then(cleanUpOrigin, cleanUpOrigin);
