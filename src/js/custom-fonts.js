@@ -108,7 +108,7 @@ export const registerCustomFont = async file => {
 
   const font = {
     name: family,
-    label: file.name.replace(/\\.[^.]+$/, ''),
+    label: file.name.replace(/\.[^.]+$/, ''),
     path,
     style: 'normal',
     weight: '400'
