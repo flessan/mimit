@@ -35,19 +35,28 @@
 
     const update = () => applyTheme(resolvedTheme);
 
+    const cleanUpOrigin = () => {
+      root.style.removeProperty('--theme-origin-x');
+      root.style.removeProperty('--theme-origin-y');
+    };
+
     if (typeof document.startViewTransition === 'function' &&
         !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const transition = document.startViewTransition(update);
-      transition.finished.finally(() => {
-        root.style.removeProperty('--theme-origin-x');
-        root.style.removeProperty('--theme-origin-y');
-      });
-      return;
+      try {
+        const transition = document.startViewTransition(update);
+        transition.finished.then(cleanUpOrigin, cleanUpOrigin);
+        return;
+      } catch {
+        // Fall back to a regular CSS transition if a view transition is busy.
+      }
     }
 
     root.classList.add('theme-transitioning');
     update();
-    window.setTimeout(() => root.classList.remove('theme-transitioning'), 560);
+    window.setTimeout(() => {
+      root.classList.remove('theme-transitioning');
+      cleanUpOrigin();
+    }, 560);
   }
 
   darkSchemeMediaQuery.addEventListener('change', () => applyTheme('system'));
