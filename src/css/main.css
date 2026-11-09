@@ -731,3 +731,41 @@ alert-element::part(close):focus-visible {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+
+/* Make the canvas feel like a real editing surface when an image arrives. */
+@media (prefers-reduced-motion: no-preference) {
+  .canvas:not([hidden]) {
+    animation: canvas-land 0.42s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  @keyframes canvas-land {
+    from {
+      opacity: 0;
+      transform: scale(0.992);
+      filter: blur(3px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
+    }
+  }
+
+  theme-toggle::part(base):hover {
+    transform: rotate(7deg) scale(1.06);
+  }
+
+  theme-toggle::part(base):active {
+    transform: rotate(-16deg) scale(0.9);
+  }
+
+  .image-crop-controls .form-range::-webkit-slider-thumb {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .image-crop-controls .form-range:active::-webkit-slider-thumb {
+    transform: scale(1.22);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.14);
+  }
+}
