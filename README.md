@@ -1,16 +1,16 @@
-# mim-it
+# mimit
 
 > A community-driven continuation of [georapbox/meme-generator](https://github.com/georapbox/meme-generator).
 
-**mim-it** began as a fork of George Raptis' [Meme Generator](https://github.com/georapbox/meme-generator). This project carries that original foundation forward as an independent, community-led continuation, with new features, improvements and contributions shaped in the open.
+**mimit** began as a fork of George Raptis' [Meme Generator](https://github.com/georapbox/meme-generator). This project carries that original foundation forward as an independent, community-led continuation, with new features, improvements and contributions shaped in the open.
 
-mim-it is a community project, not a personal one-off fork. The intention is to keep it open to the people who use it, build with it and want to improve it. Community participation and collaboration are part of the project's long-term direction.
+mimit is a community project, not a personal one-off fork. The intention is to keep it open to the people who use it, build with it and want to improve it. Community participation and collaboration are part of the project's long-term direction.
 
 This repository is an independent fork. It is not an official release of, or affiliated with, the upstream project or its maintainers. The original project and its author remain credited; the upstream license and notices are preserved.
 
 ## What we're building
 
-mim-it is a browser-based meme editor. Images are processed locally in your browser and are not uploaded to an application server.
+mimit is a browser-based meme editor. Images are processed locally in your browser and are not uploaded to an application server.
 
 - Pick a template, upload an image, load an image URL, paste an image from the clipboard, or capture a photo.
 - Add multiple text layers and adjust typography, colors, outlines, shadows, alignment and rotation.
@@ -36,7 +36,7 @@ There is no promise that every suggestion will be implemented, but contributions
 
 ## Attribution
 
-mim-it is based on [georapbox/meme-generator](https://github.com/georapbox/meme-generator), originally created by **George Raptis**. The original MIT license and copyright notice are retained in [LICENSE](./LICENSE). This fork also includes subsequent community changes made in this repository.
+mimit is based on [georapbox/meme-generator](https://github.com/georapbox/meme-generator), originally created by **George Raptis**. The original MIT license and copyright notice are retained in [LICENSE](./LICENSE). This fork also includes subsequent community changes made in this repository.
 
 ## Development
 
@@ -60,8 +60,8 @@ The static site is generated in `dist/`.
 Build and run the static site in an Nginx container:
 
 ```sh
-docker build -t mim-it .
-docker run --rm -p 8080:80 mim-it
+docker build -t mimit .
+docker run --rm -p 8080:80 mimit
 ```
 
 Open http://localhost:8080.
