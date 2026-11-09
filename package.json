@@ -1,7 +1,7 @@
 {
   "name": "meme-generator",
   "version": "1.0.0",
-  "description": "A Progressive Web App (PWA) for creating memes.",
+  "description": "A browser-based meme maker with drag-to-position text, custom fonts and client-side exports.",
   "source": "src/index.html",
   "scripts": {
     "lint": "eslint src/js/**",
@@ -24,12 +24,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/georapbox/meme-generator.git"
+    "url": "git+https://github.com/flessan/mim-it.git"
   },
   "bugs": {
-    "url": "https://github.com/georapbox/meme-generator/issues"
+    "url": "https://github.com/flessan/mim-it/issues"
   },
-  "homepage": "https://github.com/georapbox/meme-generator#readme",
+  "homepage": "https://github.com/flessan/mim-it#readme",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "~9.39.2",

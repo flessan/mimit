@@ -526,3 +526,25 @@ alert-element::part(close):focus-visible {
 .text-underline {
   text-decoration: underline;
 }
+
+
+/* Direct manipulation of text on the canvas */
+.canvas {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  cursor: default;
+}
+
+.canvas.is-dragging {
+  cursor: grabbing;
+}
+
+#customFontInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}

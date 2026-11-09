@@ -4,6 +4,7 @@ import { MAX_SHADOW_BLUR_SIZE, MAX_STROKE_WIDTH, MAX_ROTATE } from './constants.
 export class Canvas {
   #canvas = null;
   #ctx = null;
+  #textBounds = [];
 
   constructor(canvasEl) {
     this.#canvas = canvasEl;
@@ -39,8 +40,35 @@ export class Canvas {
     return this;
   }
 
-  toDataURL() {
-    return this.#canvas.toDataURL();
+  toDataURL(type = 'image/png', quality) {
+    return this.#canvas.toDataURL(type, quality);
+  }
+
+  toBlob(type = 'image/png', quality) {
+    return new Promise((resolve, reject) => {
+      this.#canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error('The browser could not encode this image format.'));
+      }, type, quality);
+    });
+  }
+
+  hitTest(x, y) {
+    for (let index = this.#textBounds.length - 1; index >= 0; index -= 1) {
+      const bounds = this.#textBounds[index];
+      const dx = x - bounds.originX;
+      const dy = y - bounds.originY;
+      const cos = Math.cos(-bounds.rotation);
+      const sin = Math.sin(-bounds.rotation);
+      const localX = dx * cos - dy * sin;
+      const localY = dx * sin + dy * cos;
+
+      if (localX >= bounds.left && localX <= bounds.right &&
+          localY >= bounds.top && localY <= bounds.bottom) {
+        return bounds.id;
+      }
+    }
+    return null;
   }
 
   draw(image, textboxes = new Map()) {
@@ -52,6 +80,7 @@ export class Canvas {
     const ctx = this.#ctx;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    this.#textBounds = [];
 
     if (isSolidColorSelected(image)) {
       ctx.fillStyle = image;
@@ -81,9 +110,28 @@ export class Canvas {
       const textHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
       const bgOffset = data.textBackgroundEnabled ? textHeight / 4 : 0;
       const lineHeight = textHeight + data.fontSize / 4 + bgOffset;
+      const lineWidths = textLines.map(line => ctx.measureText(line).width);
+      const maxLineWidth = Math.max(0, ...lineWidths);
+      const left = data.textAlign === 'left' ? 0 : data.textAlign === 'right' ? -maxLineWidth : -maxLineWidth / 2;
+      const originX = xPos + data.offsetX;
+      const originY = lineHeight * multiplier + data.offsetY;
+      const rotation = (Math.min(data.rotate, MAX_ROTATE) * Math.PI) / 180;
 
-      ctx.translate(xPos + data.offsetX, lineHeight * multiplier + data.offsetY);
-      ctx.rotate((Math.min(data.rotate, MAX_ROTATE) * Math.PI) / 180);
+      if (textLines.length && text.trim()) {
+        this.#textBounds.push({
+          id: data.id,
+          originX,
+          originY,
+          left: left - bgOffset,
+          right: left + maxLineWidth + bgOffset,
+          top: -textMetrics.actualBoundingBoxAscent - bgOffset,
+          bottom: (textLines.length - 1) * lineHeight + textMetrics.actualBoundingBoxDescent + bgOffset,
+          rotation
+        });
+      }
+
+      ctx.translate(originX, originY);
+      ctx.rotate(rotation);
 
       if (data.textBackgroundEnabled) {
         ctx.fillStyle = data.textBackgroundColor;

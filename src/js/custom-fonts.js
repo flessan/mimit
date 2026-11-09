@@ -90,6 +90,33 @@ export const customFonts = [
   }
 ];
 
+export const uploadedFonts = [];
+
+export const registerCustomFont = async file => {
+  if (!(file instanceof File)) throw new TypeError('Choose a font file first.');
+
+  const extension = file.name.split('.').pop().toLowerCase();
+  if (!['woff', 'woff2', 'ttf', 'otf'].includes(extension)) {
+    throw new Error('Supported fonts are WOFF, WOFF2, TTF and OTF.');
+  }
+
+  const family = `UploadedFont_${Date.now().toString(36)}_${uploadedFonts.length + 1}`;
+  const path = URL.createObjectURL(file);
+  const face = new FontFace(family, `url("${path}")`);
+  await face.load();
+  document.fonts.add(face);
+
+  const font = {
+    name: family,
+    label: file.name.replace(/\\.[^.]+$/, ''),
+    path,
+    style: 'normal',
+    weight: '400'
+  };
+  uploadedFonts.push(font);
+  return font;
+};
+
 export const loadCustomFont = async (name, path, options = {}) => {
   try {
     const font = new FontFace(name, `url(${path})`, { ...options });

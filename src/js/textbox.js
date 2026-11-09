@@ -1,5 +1,5 @@
 import { uid } from './utils/uid.js';
-import { customFonts } from './custom-fonts.js';
+import { customFonts, uploadedFonts } from './custom-fonts.js';
 import { MAX_SHADOW_BLUR_SIZE, MAX_STROKE_WIDTH, MAX_ROTATE } from './constants.js';
 
 const defaultTextboxData = {
@@ -146,8 +146,11 @@ class Textbox {
               <option value="Bookman">Bookman</option>
               <option value="Trebuchet MS">Trebuchet MS</option>
             </optgroup>
-            <optgroup label="Google fonts">
+            <optgroup label="Built-in fonts">
               ${customFonts.map(({ name, label }) => `<option value="${name}">${label}</option>`)}
+            </optgroup>
+            <optgroup label="Uploaded fonts" data-uploaded-fonts>
+              ${uploadedFonts.map(({ name, label }) => `<option value="${name}">${label}</option>`)}
             </optgroup>
           </select>
         </div>

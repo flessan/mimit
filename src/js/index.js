@@ -14,12 +14,18 @@ import { uid } from './utils/uid.js';
 import { fileFromUrl } from './utils/file-from-url.js';
 import { storage } from './utils/storage.js';
 import { isSolidColorSelected } from './utils/is-solid-color-selected.js';
-import { customFonts, loadCustomFont } from './custom-fonts.js';
+import { customFonts, loadCustomFont, registerCustomFont } from './custom-fonts.js';
 import { Textbox } from './textbox.js';
 import { Canvas } from './canvas.js';
 import { toastify } from './toastify.js';
 
-const canvas = Canvas.createInstance(document.getElementById('canvas'));
+const canvasElement = document.getElementById('canvas');
+const canvas = Canvas.createInstance(canvasElement);
+const copyMemeBtn = document.getElementById('copyMemeBtn');
+const exportFormatSelect = document.getElementById('exportFormatSelect');
+const customFontInput = document.getElementById('customFontInput');
+const addCustomFontBtn = document.getElementById('addCustomFontBtn');
+const snapToGridInput = document.getElementById('snapToGrid');
 const videoModal = document.getElementById('videoModal');
 const downloadModal = document.getElementById('downloadModal');
 const capturePhotoEl = document.querySelector('capture-photo');
@@ -52,6 +58,8 @@ const maxImageDimensionsFromStorage = storage.get('maxImageDimensions');
 let shouldFocusOnTextboxCreate = false;
 let selectedImage = null;
 let reqAnimFrame = null;
+let exportObjectUrl = null;
+let activeCanvasDrag = null;
 
 document.addEventListener('web-share:error', handleWebShareError);
 document.addEventListener('capture-photo:video-play', handleCapturePhotoVideoPlay, { once: true });
@@ -66,6 +74,16 @@ fileSelectBtn.addEventListener('click', handleFileSelectClick);
 openVideoModalBtn.addEventListener('click', handleOpenVideoModalButtonClick);
 addTextboxBtn.addEventListener('click', handleAddTextboxBtnClick);
 generateMemeBtn.addEventListener('click', generateMeme);
+copyMemeBtn.addEventListener('click', handleCopyMeme);
+exportFormatSelect.addEventListener('change', handleExportFormatChange);
+addCustomFontBtn.addEventListener('click', () => customFontInput.click());
+customFontInput.addEventListener('change', handleCustomFontUpload);
+document.addEventListener('paste', handlePasteImage);
+canvasElement.addEventListener('pointerdown', handleCanvasPointerDown);
+canvasElement.addEventListener('pointermove', handleCanvasPointerMove);
+canvasElement.addEventListener('pointerup', handleCanvasPointerUp);
+canvasElement.addEventListener('pointercancel', handleCanvasPointerUp);
+canvasElement.addEventListener('lostpointercapture', handleCanvasPointerUp);
 downloadMemeBtn.addEventListener('click', () => (downloadModal.open = false));
 imageUrlForm.addEventListener('submit', handleImageUploadFromURL);
 dropzoneEl.addEventListener('files-dropzone-drop-accepted', handleDropFilesAccepted);
@@ -125,66 +143,90 @@ function renderAcceptedImageFormats(acceptedMimeTypes, rootEl) {
 }
 
 async function generateMeme() {
-  const dataUrl = canvas.toDataURL('image/png');
-  const filename = `${uid('meme')}.png`;
+  try {
+    await refreshExportPreview();
+    window.requestAnimationFrame(() => {
+      downloadModal.open = true;
+    });
+  } catch (error) {
+    toastify(`<strong>Export failed</strong><br><small>${error.message}</small>`, {
+      trustDangerousInnerHTML: true,
+      variant: 'danger',
+      announce: 'alert'
+    });
+  }
+}
 
-  // Prepare download link
-  const downloadLink = dataUrl.replace('image/png', 'image/octet-stream');
+async function refreshExportPreview() {
+  const requestedType = exportFormatSelect.value || 'image/png';
+  const quality = requestedType === 'image/jpeg' ? 0.92 : 0.95;
+  const blob = await canvas.toBlob(requestedType, quality);
+  const mimeType = blob.type || requestedType;
+  const extension = mimeType === 'image/jpeg' ? 'jpg' : mimeType.split('/')[1];
+  const filename = `${uid('meme')}.${extension}`;
+
+  if (exportObjectUrl) URL.revokeObjectURL(exportObjectUrl);
+  exportObjectUrl = URL.createObjectURL(blob);
   downloadMemeBtn.download = filename;
-  downloadMemeBtn.href = downloadLink;
+  downloadMemeBtn.href = exportObjectUrl;
   downloadMemePreview.width = canvas.getDimensions().width;
   downloadMemePreview.height = canvas.getDimensions().height;
-  downloadMemePreview.src = downloadLink;
+  downloadMemePreview.src = exportObjectUrl;
 
-  // Prepare for sharing file
   if (isWebShareSupported()) {
-    try {
-      const file = await fileFromUrl({
-        url: dataUrl,
-        filename,
-        mimeType: 'image/png'
-      }).catch(err => {
-        toastify(`<strong>Error preparing meme for sharing</strong><br><small>${err.message}</small>`, {
-          trustDangerousInnerHTML: true,
-          variant: 'danger',
-          announce: 'alert'
-        });
-      });
-
-      if (file && isWebShareSupported({ files: [file] })) {
-        webShareComponent.shareFiles = [file];
-        webShareComponent.hidden = false;
-      }
-    } catch (error) {
-      console.error(error);
+    const file = new File([blob], filename, { type: mimeType });
+    if (isWebShareSupported({ files: [file] })) {
+      webShareComponent.shareFiles = [file];
+      webShareComponent.hidden = false;
+    } else {
+      webShareComponent.hidden = true;
     }
+  } else {
+    webShareComponent.hidden = true;
+  }
+  return blob;
+}
+
+async function handleCopyMeme() {
+  if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
+    toastify('Image clipboard access is not supported in this browser. Use HTTPS or download the image instead.', {
+      variant: 'warning',
+      announce: 'polite'
+    });
+    return;
   }
 
-  window.requestAnimationFrame(() => {
-    downloadModal.open = true;
-  });
+  try {
+    const blob = await canvas.toBlob('image/png');
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    toastify('Image copied to clipboard.', { variant: 'success', announce: 'polite' });
+  } catch (error) {
+    toastify(`Could not copy image: ${error.message}`, { variant: 'danger', announce: 'alert' });
+  }
+}
+
+async function handleExportFormatChange() {
+  if (!selectedImage) return;
+  try {
+    await refreshExportPreview();
+  } catch (error) {
+    toastify(`Could not change export format: ${error.message}`, { variant: 'danger', announce: 'alert' });
+  }
 }
 
 function setImageMaxDimensions(image) {
-  const maxImageDimensionsSelect = maxImageDimensionsForm['maxImageDimensions'];
-  const [maxWidthValue, maxHeightValue] = maxImageDimensionsSelect.value.split('x');
-  const MAX_WIDTH = Number(maxWidthValue) || 800;
-  const MAX_HEIGHT = Number(maxHeightValue) || 600;
+  const selectedSize = maxImageDimensionsForm['maxImageDimensions'].value;
   let width = image.width;
   let height = image.height;
 
-  if (width > height) {
-    if (width > MAX_WIDTH) {
-      height *= MAX_WIDTH / width;
-      width = MAX_WIDTH;
-    }
-  } else {
-    if (height > MAX_HEIGHT) {
-      width *= MAX_HEIGHT / height;
-      height = MAX_HEIGHT;
-    }
+  if (selectedSize !== 'original') {
+    const [maxWidthValue, maxHeightValue] = selectedSize.split('x');
+    const maxWidth = Number(maxWidthValue) || 800;
+    const maxHeight = Number(maxHeightValue) || 600;
+    const scale = Math.min(1, maxWidth / width, maxHeight / height);
+    width = Math.max(1, Math.round(width * scale));
+    height = Math.max(1, Math.round(height * scale));
   }
-
   canvas.setDimensions({ width, height });
 }
 
@@ -236,6 +278,101 @@ function handleFileSelect(file) {
   });
 
   reader.readAsDataURL(file);
+}
+
+function handlePasteImage(evt) {
+  const imageItem = Array.from(evt.clipboardData?.items || []).find(item => item.type.startsWith('image/'));
+  const file = imageItem?.getAsFile();
+  if (!file) return;
+
+  evt.preventDefault();
+  const pastedFile = file.name
+    ? file
+    : new File([file], `pasted-image.${file.type.split('/')[1] || 'png'}`, { type: file.type });
+  handleFileSelect(pastedFile);
+}
+
+function handleCanvasPointerDown(evt) {
+  if (!selectedImage || evt.button !== 0) return;
+  const rect = canvasElement.getBoundingClientRect();
+  const point = {
+    x: (evt.clientX - rect.left) * (canvas.width / rect.width),
+    y: (evt.clientY - rect.top) * (canvas.height / rect.height)
+  };
+  const textboxId = canvas.hitTest(point.x, point.y);
+  const textbox = textboxId && Textbox.getById(textboxId);
+  if (!textbox) return;
+
+  const data = textbox.getData();
+  activeCanvasDrag = {
+    pointerId: evt.pointerId,
+    textboxId,
+    startX: point.x,
+    startY: point.y,
+    offsetX: data.offsetX,
+    offsetY: data.offsetY
+  };
+  canvasElement.setPointerCapture(evt.pointerId);
+  canvasElement.classList.add('is-dragging');
+  evt.preventDefault();
+}
+
+function handleCanvasPointerMove(evt) {
+  const rect = canvasElement.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const point = {
+    x: (evt.clientX - rect.left) * (canvas.width / rect.width),
+    y: (evt.clientY - rect.top) * (canvas.height / rect.height)
+  };
+
+  if (!activeCanvasDrag) {
+    canvasElement.style.cursor = canvas.hitTest(point.x, point.y) ? 'grab' : 'default';
+    return;
+  }
+
+  const textbox = Textbox.getById(activeCanvasDrag.textboxId);
+  if (!textbox) return;
+  const snap = snapToGridInput.checked ? 10 : 1;
+  const data = textbox.getData();
+  data.offsetX = Math.round((activeCanvasDrag.offsetX + point.x - activeCanvasDrag.startX) / snap) * snap;
+  data.offsetY = Math.round((activeCanvasDrag.offsetY + point.y - activeCanvasDrag.startY) / snap) * snap;
+
+  const textboxEl = document.getElementById(activeCanvasDrag.textboxId);
+  const offsetXInput = textboxEl?.querySelector('[data-input="offsetX"]');
+  const offsetYInput = textboxEl?.querySelector('[data-input="offsetY"]');
+  if (offsetXInput) offsetXInput.value = data.offsetX;
+  if (offsetYInput) offsetYInput.value = data.offsetY;
+  canvas.draw(selectedImage, Textbox.getAll());
+}
+
+function handleCanvasPointerUp(evt) {
+  if (!activeCanvasDrag || (evt.pointerId !== undefined && evt.pointerId !== activeCanvasDrag.pointerId)) return;
+  activeCanvasDrag = null;
+  canvasElement.classList.remove('is-dragging');
+  canvasElement.style.cursor = 'default';
+}
+
+async function handleCustomFontUpload(evt) {
+  const [file] = evt.target.files || [];
+  if (!file) return;
+  try {
+    const font = await registerCustomFont(file);
+    textboxesContainer.querySelectorAll('[data-input="font"]').forEach(select => {
+      let group = select.querySelector('[data-uploaded-fonts]');
+      if (!group) {
+        group = document.createElement('optgroup');
+        group.label = 'Uploaded fonts';
+        group.dataset.uploadedFonts = '';
+        select.appendChild(group);
+      }
+      group.appendChild(new Option(font.label, font.name));
+    });
+    toastify(`Font “${font.label}” added for this session.`, { variant: 'success', announce: 'polite' });
+  } catch (error) {
+    toastify(`Could not load font: ${error.message}`, { variant: 'danger', announce: 'alert' });
+  } finally {
+    customFontInput.value = '';
+  }
 }
 
 function handleOpenVideoModalButtonClick() {

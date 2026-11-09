@@ -1,88 +1,74 @@
-# Meme Generator
+# mim-it
 
-A Progressive Web App (PWA) for creating memes.
-
-## About
-
-This is a web application that allows users to create memes by adding text to images.
-The application is built with web technologies such as HTML, CSS, and JavaScript.
-It uses the [Canvas API](https://developer.mozilla.org/docs/Web/API/Canvas_API) to draw the meme text on the image. 
-Processing the image and text is done client-side, so no data is sent to any server.
-
-## Live demo
-
-👉 [Meme Generator](https://georapbox.github.io/meme-generator/)
+A browser-based meme maker for creating and exporting image memes. It runs entirely client-side: images and uploaded fonts stay in the browser and are not sent to an application server.
 
 ## Features
 
-Some of the key features of the application include creating memes by:
-- Selecting an image from your device
-- Selecting an image from the web (by URL)
-- Selecting an image from the gallery
-- Taking a photo with your device's web camera
-- Using a solid color as background
-
-## Screenshots
-
-The following screenshots show the application in action:
-
-![meme](screenshots/screenshot.png)
+- Pick a template, upload an image, load an image URL, paste an image from the clipboard, or capture a photo.
+- Add multiple text layers and adjust typography, colors, outlines, shadows, alignment and rotation.
+- Drag text layers directly on the canvas, with an optional 10px snap grid.
+- Upload WOFF, WOFF2, TTF and OTF fonts for the current browser session.
+- Export as PNG, JPEG or WebP, copy a PNG directly to the clipboard, or share where supported.
+- Keep the source image's original dimensions or choose a maximum canvas size.
+- Installable Progressive Web App (PWA).
 
 ## Development
 
-Below are the instructions for setting up the development environment.
-
-### Prerequisites
-
-- **[nvm](https://github.com/nvm-sh/nvm)** (Node Version Manager)
-
-The required Node.js version is managed via **nvm** and defined in the `.nvmrc` file.  
-Once the correct Node version is active, the bundled npm version will be used automatically.
-
-### Installation
-
-Clone the repository to your local machine:
+Requires Node.js 24 and npm 11.17 or newer.
 
 ```sh
-git clone git@github.com:georapbox/meme-generator.git
+npm ci
+npm start
 ```
 
-Navigate to the project's directory and install the dependencies:
-
-```sh
-npm install
-```
-
-### Running the application
-
-To run the application in development mode, run the following command:
-
-```sh
-npm start -- --open
-```
-
-This will start the development server and open the application in your default web browser.
-
-### Building the application for production
-
-To build the application for production, run the following command:
+Create a production build:
 
 ```sh
 npm run build
 ```
 
-This will create a `dist` directory containing the production build of the application.
+The static site is generated in `dist/`.
 
-### Deployment
+## Cloudflare Pages
 
-To deploy the application, run the following command:
+This repository includes a Wrangler Pages configuration and a GitHub Actions deployment workflow.
+
+1. In Cloudflare, create a **Pages project using Direct Upload** named `mim-it`. The workflow deploys the generated `dist/` directory with Wrangler. Do not choose Git integration for this project if you intend to use this workflow: Cloudflare does not allow converting a Direct Upload project into a Git-integrated project or vice versa.
+2. Create an Account API Token with **Cloudflare Pages: Edit** permission.
+3. In GitHub, open **Settings → Secrets and variables → Actions** and add:
+   - `CLOUDFLARE_API_TOKEN`: your Cloudflare API token.
+   - `CLOUDFLARE_ACCOUNT_ID`: the account ID from the Cloudflare dashboard.
+4. Push to `main`, or run **Deploy to Cloudflare Pages** manually from the Actions tab.
+
+The workflow builds with Node.js 24 and deploys to the `mim-it` Pages project.
+
+For a local preview:
 
 ```sh
-npm run deploy
+npx wrangler pages dev dist
 ```
 
-This will build the application first and then deploy it to GitHub Pages in the `gh-pages` branch.
+For a manual deployment:
+
+```sh
+npx wrangler pages deploy dist --project-name=mim-it --branch=main
+```
+
+## Docker
+
+```sh
+docker build -t mim-it .
+docker run --rm -p 8080:80 mim-it
+```
+
+Open http://localhost:8080.
+
+## Browser notes
+
+- Clipboard image writes require a secure context (HTTPS or localhost) and browser clipboard support.
+- PNG, JPEG, GIF, WebP, AVIF, BMP, SVG and ICO are included in the picker. Actual decoding depends on the browser.
+- JPEG does not preserve transparency. PNG is used when copying to the clipboard.
 
 ## License
 
-[The MIT License (MIT)](./LICENSE)
+[MIT](./LICENSE). This project retains the upstream project's existing licensing and attribution.

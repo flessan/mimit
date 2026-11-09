@@ -1,24 +1,21 @@
-import { ACCEPTED_MIME_TYPES } from '../constants.js';
-
 /**
- * Creates a file from a given URL.
+ * Creates a File from a URL and verifies that the response is an image.
  *
- * @param {{ url: string, filename: string, mimeType: string }} options
- * @param {string} options.url - The URL of the file to fetch.
- * @param {string} options.filename - The name of the file to create.
- * @param {string} options.mimeType - The MIME type of the file to create.
- * @returns {Promise<File>} - A promise that resolves to the file created from the given URL.
+ * @param {{ url: string, filename?: string, mimeType?: string }} options
+ * @returns {Promise<File>}
  */
 export const fileFromUrl = async (options = {}) => {
-  const res = await fetch(options.url);
-  const blob = await res.blob();
-  const mimeType = options.mimeType || blob.type || '';
-
-  if (!ACCEPTED_MIME_TYPES.includes(mimeType)) {
-    throw new Error(
-      `This is not an accepted image format. Accepted MIME types are: ${ACCEPTED_MIME_TYPES.join(', ')}`
-    );
+  const response = await fetch(options.url);
+  if (!response.ok) {
+    throw new Error(`Image request failed with status ${response.status}.`);
   }
 
-  return new File([blob], options.filename || '', blob);
+  const blob = await response.blob();
+  const mimeType = options.mimeType || blob.type || '';
+  if (!mimeType.toLowerCase().startsWith('image/')) {
+    throw new Error('The selected URL did not return an image.');
+  }
+
+  const extension = mimeType.split('/')[1]?.replace('svg+xml', 'svg') || 'img';
+  return new File([blob], options.filename || `image.${extension}`, { type: mimeType });
 };
