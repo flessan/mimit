@@ -1,7 +1,7 @@
 {
-  "name": "meme-generator",
+  "name": "mim-it",
   "version": "1.0.0",
-  "description": "A browser-based meme maker with drag-to-position text, custom fonts and client-side exports.",
+  "description": "A community-driven meme editor with custom fonts, drag-to-position text and client-side image exports.",
   "source": "src/index.html",
   "scripts": {
     "lint": "eslint src/js/**",
@@ -19,8 +19,8 @@
     "meme generator"
   ],
   "author": {
-    "name": "George Raptis",
-    "email": "georapbox@gmail.com"
+    "name": "mim-it community",
+    "url": "https://github.com/flessan/mim-it"
   },
   "repository": {
     "type": "git",
