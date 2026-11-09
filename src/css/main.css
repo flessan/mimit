@@ -918,7 +918,7 @@ alert-element::part(close):focus-visible {
 
   .workspace-panel {
     display: flex;
-    flex: 0 0 34%;
+    flex: 0 0 33.333333%;
     flex-direction: column;
     min-width: 300px;
     min-height: 0;
@@ -1073,5 +1073,18 @@ alert-element::part(close):focus-visible {
   body,
   main {
     scroll-behavior: auto !important;
+  }
+}
+
+
+/* Reserve enough vertical room for the crop toolbar on shorter displays. */
+@media (min-width: 992px) and (min-height: 660px) {
+  .workspace-stage:has(#imageCropControls:not([hidden])) .dropzone,
+  .workspace-stage:has(#imageCropControls:not([hidden])) .dropzone::part(dropzone) {
+    max-height: calc(100dvh - 17rem);
+  }
+
+  .workspace-stage:has(#imageCropControls:not([hidden])) .canvas {
+    max-height: calc(100dvh - 18.4rem);
   }
 }
