@@ -47,8 +47,8 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.156.1"
           command: pages deploy dist --project-name=mim-it --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         env:
           NPM_CONFIG_YES: "true"
           NPM_CONFIG_MIN_RELEASE_AGE: "0"
           NPM_CONFIG_STRICT_ALLOW_SCRIPTS: "false"
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
