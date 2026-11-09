@@ -1,7 +1,7 @@
 {
-  "short_name": "Meme Generator",
-  "name": "Meme Generator",
-  "description": "Create memes by uploading an image or taking a photo.",
+  "short_name": "mim-it",
+  "name": "mim-it - Community Meme Generator",
+  "description": "A community-driven meme editor for creating, positioning and exporting memes in your browser.",
   "screenshots": [
     {
       "src": "assets/app-icons/screenshots/screenshot.png",
