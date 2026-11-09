@@ -56,7 +56,7 @@
     window.setTimeout(() => {
       root.classList.remove('theme-transitioning');
       cleanUpOrigin();
-    }, 560);
+    }, 1650);
   }
 
   darkSchemeMediaQuery.addEventListener('change', () => applyTheme('system'));
