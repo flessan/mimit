@@ -1,5 +1,5 @@
 {
-  "name": "mim-it",
+  "name": "mimit",
   "version": "1.0.0",
   "description": "A community-driven meme editor with custom fonts, drag-to-position text and client-side image exports.",
   "source": "src/index.html",
@@ -19,17 +19,17 @@
     "meme generator"
   ],
   "author": {
-    "name": "mim-it community",
-    "url": "https://github.com/flessan/mim-it"
+    "name": "mimit community",
+    "url": "https://github.com/flessan/mimit"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flessan/mim-it.git"
+    "url": "git+https://github.com/flessan/mimit.git"
   },
   "bugs": {
-    "url": "https://github.com/flessan/mim-it/issues"
+    "url": "https://github.com/flessan/mimit/issues"
   },
-  "homepage": "https://github.com/flessan/mim-it#readme",
+  "homepage": "https://github.com/flessan/mimit#readme",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "~9.39.2",
