@@ -71,7 +71,7 @@ export class Canvas {
     return null;
   }
 
-  draw(image, textboxes = new Map()) {
+  draw(image, textboxes = new Map(), imageTransform = {}) {
     if (image == null) {
       return;
     }
@@ -86,7 +86,22 @@ export class Canvas {
       ctx.fillStyle = image;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else {
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const scale = Math.max(1, Number(imageTransform.scale) || 1);
+      const offsetX = Number(imageTransform.offsetX) || 0;
+      const offsetY = Number(imageTransform.offsetY) || 0;
+      const imageWidth = canvas.width * scale;
+      const imageHeight = canvas.height * scale;
+      const imageX = (canvas.width - imageWidth) / 2 + offsetX;
+      const imageY = (canvas.height - imageHeight) / 2 + offsetY;
+
+      // The canvas itself is the crop frame. The source can move and zoom,
+      // but pixels outside the frame are never painted or exported.
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, canvas.width, canvas.height);
+      ctx.clip();
+      ctx.drawImage(image, imageX, imageY, imageWidth, imageHeight);
+      ctx.restore();
     }
 
     let multiplier = 0;

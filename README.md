@@ -15,6 +15,7 @@ mim-it is a browser-based meme editor. Images are processed locally in your brow
 - Pick a template, upload an image, load an image URL, paste an image from the clipboard, or capture a photo.
 - Add multiple text layers and adjust typography, colors, outlines, shadows, alignment and rotation.
 - Drag text layers directly on the canvas, with an optional 10px snap grid.
+- Crop and reposition images with zoom and bounded dragging inside the canvas frame.
 - Upload WOFF, WOFF2, TTF and OTF fonts for the current browser session.
 - Export as PNG, JPEG or WebP, copy a PNG directly to the clipboard, or share where supported.
 - Keep the source image's original dimensions or choose a maximum canvas size.
@@ -53,31 +54,6 @@ npm run build
 ```
 
 The static site is generated in `dist/`.
-
-## Cloudflare Pages (manual upload)
-
-mim-it uses **Cloudflare Pages Direct Upload**. There is no GitHub Actions deployment workflow and no automatic deployment on every push. You build the site locally and upload the generated assets through the Cloudflare dashboard.
-
-1. Install dependencies and create the production build:
-
-   ```sh
-   npm ci
-   npm run build
-   ```
-
-2. Open [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create application** → **Pages** → **Get started** → **Drag and drop your files**.
-3. Enter `mim-it` as the project name, then upload the generated `dist/` folder (or a ZIP containing its contents).
-4. Select **Deploy site**.
-
-For later updates, open the `mim-it` project in Cloudflare Pages, choose **Create a new deployment**, select the production environment, upload the newly generated `dist/` output and select **Save and Deploy**.
-
-**Important:** Direct Upload projects cannot later be converted into Git-integrated Pages projects. Choose this mode because deployments are intentionally manual. See the [Cloudflare Direct Upload guide](https://developers.cloudflare.com/pages/get-started/direct-upload/) for current dashboard steps and upload limits.
-
-For a local preview of the production output:
-
-```sh
-npx wrangler pages dev dist
-```
 
 ## Docker
 

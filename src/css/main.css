@@ -548,3 +548,186 @@ alert-element::part(close):focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
 }
+
+
+/* Crop and reposition toolbar */
+.image-crop-controls {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.85rem;
+  background: var(--bs-body-bg);
+  box-shadow: 0 0.35rem 1.2rem rgba(0, 0, 0, 0.045);
+  animation: editor-rise-in 0.32s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.image-zoom-value {
+  min-width: 3.4rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  background: var(--bs-tertiary-bg);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+.image-zoom-row {
+  min-height: 1.6rem;
+}
+
+.image-crop-controls .form-range {
+  cursor: ew-resize;
+}
+
+.canvas.is-image-move-mode {
+  cursor: grab;
+}
+
+.canvas.is-image-dragging {
+  cursor: grabbing;
+}
+
+.canvas.is-image-move-mode:not(.is-image-dragging) {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* A deliberate, tactile motion language for the editor. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    view-transition-name: root;
+  }
+
+  ::view-transition-old(root) {
+    animation: theme-old-out 0.48s ease both;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-new(root) {
+    animation: theme-circle-reveal 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+    clip-path: circle(0 at var(--theme-origin-x, 96%) var(--theme-origin-y, 3rem));
+    mix-blend-mode: normal;
+  }
+
+  @keyframes theme-circle-reveal {
+    to {
+      clip-path: circle(160vmax at var(--theme-origin-x, 96%) var(--theme-origin-y, 3rem));
+    }
+  }
+
+  @keyframes theme-old-out {
+    to {
+      opacity: 0.94;
+    }
+  }
+
+  .theme-transitioning,
+  .theme-transitioning body,
+  .theme-transitioning .bg-body,
+  .theme-transitioning .bg-body-tertiary {
+    transition:
+      background-color 0.52s cubic-bezier(0.2, 0.75, 0.25, 1),
+      color 0.42s ease,
+      border-color 0.42s ease;
+  }
+
+  .btn,
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  .form-check-input,
+  .settings-button,
+  .duplicate-button,
+  details > summary,
+  theme-toggle::part(base) {
+    transition:
+      color 0.2s ease,
+      background-color 0.24s ease,
+      border-color 0.2s ease,
+      box-shadow 0.24s ease,
+      transform 0.24s cubic-bezier(0.2, 0.75, 0.25, 1),
+      opacity 0.2s ease;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+  }
+
+  .btn.active {
+    box-shadow: inset 0 0 0 1px currentColor;
+  }
+
+  .textboxes-container > [data-section="textbox"] {
+    animation: editor-rise-in 0.3s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+    transform-origin: top center;
+  }
+
+  .gallery > button {
+    transition:
+      transform 0.24s cubic-bezier(0.2, 0.75, 0.25, 1),
+      filter 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .gallery > button:hover {
+    transform: translateY(-3px) rotate(-1deg);
+    filter: saturate(1.08);
+  }
+
+  .instructions__image {
+    animation: image-float 3.8s ease-in-out infinite;
+  }
+
+  modal-element::part(base) {
+    transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+}
+
+@keyframes editor-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes image-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .image-crop-controls {
+    padding: 0.8rem;
+  }
+
+  .image-crop-controls .d-flex.flex-wrap {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+  }
+}

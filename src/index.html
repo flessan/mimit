@@ -63,6 +63,28 @@
               </div>
             </div>
           </files-dropzone>
+
+          <section id="imageCropControls" class="image-crop-controls mt-3" aria-label="Crop and reposition image" hidden>
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+              <div>
+                <strong>Crop & reposition</strong>
+                <small class="d-block text-muted">Zoom in, then drag to choose what stays in frame.</small>
+              </div>
+              <span class="image-zoom-value" id="imageZoomValue">100%</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 image-zoom-row">
+              <label for="imageZoom" class="visually-hidden">Image zoom</label>
+              <span class="small text-muted">1×</span>
+              <input type="range" class="form-range mb-0" id="imageZoom" min="1" max="3" step="0.05" value="1">
+              <span class="small text-muted">3×</span>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              <button type="button" class="btn btn-sm btn-outline-primary" id="toggleImageMoveBtn" aria-pressed="false">Move image</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="resetImageBtn">Reset crop</button>
+            </div>
+          </section>
         </div>
 
         <div class="col-lg-4 col-md-5 pt-0 pt-md-3 pb-3">

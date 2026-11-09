@@ -26,6 +26,11 @@ const exportFormatSelect = document.getElementById('exportFormatSelect');
 const customFontInput = document.getElementById('customFontInput');
 const addCustomFontBtn = document.getElementById('addCustomFontBtn');
 const snapToGridInput = document.getElementById('snapToGrid');
+const imageCropControls = document.getElementById('imageCropControls');
+const toggleImageMoveBtn = document.getElementById('toggleImageMoveBtn');
+const imageZoomInput = document.getElementById('imageZoom');
+const imageZoomValue = document.getElementById('imageZoomValue');
+const resetImageBtn = document.getElementById('resetImageBtn');
 const videoModal = document.getElementById('videoModal');
 const downloadModal = document.getElementById('downloadModal');
 const capturePhotoEl = document.querySelector('capture-photo');
@@ -60,6 +65,9 @@ let selectedImage = null;
 let reqAnimFrame = null;
 let exportObjectUrl = null;
 let activeCanvasDrag = null;
+let activeImageDrag = null;
+let imageMoveMode = false;
+const imageTransform = { scale: 1, offsetX: 0, offsetY: 0 };
 
 document.addEventListener('web-share:error', handleWebShareError);
 document.addEventListener('capture-photo:video-play', handleCapturePhotoVideoPlay, { once: true });
@@ -84,6 +92,9 @@ canvasElement.addEventListener('pointermove', handleCanvasPointerMove);
 canvasElement.addEventListener('pointerup', handleCanvasPointerUp);
 canvasElement.addEventListener('pointercancel', handleCanvasPointerUp);
 canvasElement.addEventListener('lostpointercapture', handleCanvasPointerUp);
+toggleImageMoveBtn.addEventListener('click', handleToggleImageMove);
+imageZoomInput.addEventListener('input', handleImageZoomInput);
+resetImageBtn.addEventListener('click', handleResetImage);
 downloadMemeBtn.addEventListener('click', () => (downloadModal.open = false));
 imageUrlForm.addEventListener('submit', handleImageUploadFromURL);
 dropzoneEl.addEventListener('files-dropzone-drop-accepted', handleDropFilesAccepted);
@@ -214,6 +225,62 @@ async function handleExportFormatChange() {
   }
 }
 
+function renderCanvas() {
+  if (!selectedImage) return;
+  return canvas.draw(selectedImage, Textbox.getAll(), imageTransform);
+}
+
+function clampImageTransform() {
+  const maxOffsetX = Math.max(0, (canvas.width * (imageTransform.scale - 1)) / 2);
+  const maxOffsetY = Math.max(0, (canvas.height * (imageTransform.scale - 1)) / 2);
+
+  imageTransform.offsetX = Math.min(maxOffsetX, Math.max(-maxOffsetX, imageTransform.offsetX));
+  imageTransform.offsetY = Math.min(maxOffsetY, Math.max(-maxOffsetY, imageTransform.offsetY));
+}
+
+function resetImageTransform() {
+  imageTransform.scale = 1;
+  imageTransform.offsetX = 0;
+  imageTransform.offsetY = 0;
+  imageZoomInput.value = '1';
+  updateImageZoomLabel();
+  clampImageTransform();
+}
+
+function updateImageZoomLabel() {
+  imageZoomValue.textContent = `${Math.round(imageTransform.scale * 100)}%`;
+}
+
+function updateImageMoveMode() {
+  toggleImageMoveBtn.classList.toggle('active', imageMoveMode);
+  toggleImageMoveBtn.setAttribute('aria-pressed', String(imageMoveMode));
+  toggleImageMoveBtn.textContent = imageMoveMode ? 'Done positioning' : 'Move image';
+  canvasElement.classList.toggle('is-image-move-mode', imageMoveMode);
+  if (!activeImageDrag) {
+    canvasElement.style.cursor = imageMoveMode ? 'grab' : 'default';
+  }
+}
+
+function handleToggleImageMove() {
+  if (!selectedImage || isSolidColorSelected(selectedImage)) return;
+  imageMoveMode = !imageMoveMode;
+  updateImageMoveMode();
+}
+
+function handleImageZoomInput() {
+  if (!selectedImage || isSolidColorSelected(selectedImage)) return;
+  imageTransform.scale = Math.max(1, Number(imageZoomInput.value) || 1);
+  clampImageTransform();
+  updateImageZoomLabel();
+  renderCanvas();
+}
+
+function handleResetImage() {
+  if (!selectedImage || isSolidColorSelected(selectedImage)) return;
+  resetImageTransform();
+  renderCanvas();
+}
+
 function setImageMaxDimensions(image) {
   const selectedSize = maxImageDimensionsForm['maxImageDimensions'].value;
   let width = image.width;
@@ -228,10 +295,17 @@ function setImageMaxDimensions(image) {
     height = Math.max(1, Math.round(height * scale));
   }
   canvas.setDimensions({ width, height });
+  clampImageTransform();
 }
 
 function afterImageSelect() {
-  canvas.draw(selectedImage, Textbox.getAll()).show();
+  const isImage = selectedImage && !isSolidColorSelected(selectedImage);
+  imageCropControls.hidden = !isImage;
+  if (!isImage) {
+    imageMoveMode = false;
+    updateImageMoveMode();
+  }
+  renderCanvas().show();
   dropzoneEl.classList.add('dropzone--accepted');
   dropzoneEl.disabled = true;
   generateMemeBtn.disabled = false;
@@ -241,6 +315,10 @@ function afterImageSelect() {
 
 function handleImageLoad(evt) {
   selectedImage = evt.target;
+  imageMoveMode = false;
+  activeImageDrag = null;
+  resetImageTransform();
+  updateImageMoveMode();
   setImageMaxDimensions(selectedImage);
   afterImageSelect();
 }
@@ -299,6 +377,21 @@ function handleCanvasPointerDown(evt) {
     x: (evt.clientX - rect.left) * (canvas.width / rect.width),
     y: (evt.clientY - rect.top) * (canvas.height / rect.height)
   };
+
+  if (imageMoveMode && !isSolidColorSelected(selectedImage)) {
+    activeImageDrag = {
+      pointerId: evt.pointerId,
+      startX: point.x,
+      startY: point.y,
+      offsetX: imageTransform.offsetX,
+      offsetY: imageTransform.offsetY
+    };
+    canvasElement.setPointerCapture(evt.pointerId);
+    canvasElement.classList.add('is-image-dragging');
+    evt.preventDefault();
+    return;
+  }
+
   const textboxId = canvas.hitTest(point.x, point.y);
   const textbox = textboxId && Textbox.getById(textboxId);
   if (!textbox) return;
@@ -325,8 +418,18 @@ function handleCanvasPointerMove(evt) {
     y: (evt.clientY - rect.top) * (canvas.height / rect.height)
   };
 
+  if (activeImageDrag) {
+    imageTransform.offsetX = activeImageDrag.offsetX + point.x - activeImageDrag.startX;
+    imageTransform.offsetY = activeImageDrag.offsetY + point.y - activeImageDrag.startY;
+    clampImageTransform();
+    renderCanvas();
+    return;
+  }
+
   if (!activeCanvasDrag) {
-    canvasElement.style.cursor = canvas.hitTest(point.x, point.y) ? 'grab' : 'default';
+    canvasElement.style.cursor = imageMoveMode
+      ? 'grab'
+      : canvas.hitTest(point.x, point.y) ? 'grab' : 'default';
     return;
   }
 
@@ -342,14 +445,17 @@ function handleCanvasPointerMove(evt) {
   const offsetYInput = textboxEl?.querySelector('[data-input="offsetY"]');
   if (offsetXInput) offsetXInput.value = data.offsetX;
   if (offsetYInput) offsetYInput.value = data.offsetY;
-  canvas.draw(selectedImage, Textbox.getAll());
+  renderCanvas();
 }
 
 function handleCanvasPointerUp(evt) {
-  if (!activeCanvasDrag || (evt.pointerId !== undefined && evt.pointerId !== activeCanvasDrag.pointerId)) return;
+  const activeDrag = activeImageDrag || activeCanvasDrag;
+  if (!activeDrag || (evt.pointerId !== undefined && evt.pointerId !== activeDrag.pointerId)) return;
+
+  activeImageDrag = null;
   activeCanvasDrag = null;
-  canvasElement.classList.remove('is-dragging');
-  canvasElement.style.cursor = 'default';
+  canvasElement.classList.remove('is-dragging', 'is-image-dragging');
+  canvasElement.style.cursor = imageMoveMode ? 'grab' : 'default';
 }
 
 async function handleCustomFontUpload(evt) {
@@ -393,7 +499,7 @@ function handleTextPropChange(element, textboxId, prop) {
       textboxData[prop] = element.value;
   }
 
-  canvas.draw(selectedImage, Textbox.getAll());
+  renderCanvas();
 }
 
 function handleAddTextboxBtnClick() {
@@ -477,7 +583,7 @@ function moveTextUsingArrowbuttons(textboxId, direction) {
         break;
     }
 
-    canvas.draw(selectedImage, Textbox.getAll());
+    renderCanvas();
 
     reqAnimFrame = requestAnimationFrame(moveTextUsingArrowbuttons(textboxId, direction));
   };
@@ -772,7 +878,7 @@ function handleMaxImageDimensionsFormChange(evt) {
   }
 
   setImageMaxDimensions(selectedImage);
-  canvas.draw(selectedImage, Textbox.getAll());
+  renderCanvas();
 }
 
 function handleTextboxCreate(evt) {
@@ -783,7 +889,7 @@ function handleTextboxCreate(evt) {
   textboxesContainer.appendChild(textboxEl);
 
   if (textbox.getData().text) {
-    canvas.draw(selectedImage, Textbox.getAll());
+    renderCanvas();
   }
 }
 
@@ -795,7 +901,7 @@ function handleTextboxDelete(evt) {
     el.querySelector('[data-input="text"]').setAttribute('placeholder', `Text #${idx + 1}`);
   });
 
-  canvas.draw(selectedImage, Textbox.getAll());
+  renderCanvas();
 }
 
 function handleClearCanvas(evt) {
@@ -805,6 +911,11 @@ function handleClearCanvas(evt) {
 
   evt.stopPropagation();
   selectedImage = null;
+  imageCropControls.hidden = true;
+  imageMoveMode = false;
+  activeImageDrag = null;
+  resetImageTransform();
+  updateImageMoveMode();
   dropzoneEl.classList.remove('dropzone--accepted');
   generateMemeBtn.disabled = true;
   instructionsEl.hidden = false;
