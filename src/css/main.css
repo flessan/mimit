@@ -769,3 +769,309 @@ alert-element::part(close):focus-visible {
     box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.14);
   }
 }
+
+
+/* mimit workspace: a compact, viewport-fitted editing surface. */
+@media (min-width: 992px) and (min-height: 660px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  main {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    min-height: 0;
+    padding: 0.8rem clamp(0.8rem, 1.7vw, 1.6rem) 0.65rem;
+    overflow: hidden;
+  }
+
+  .site-header {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    column-gap: 0.8rem;
+    margin: 0;
+    min-height: 3.25rem;
+    padding: 0 4rem 0 0.15rem;
+    text-align: left;
+  }
+
+  .site-header > img {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 !important;
+  }
+
+  .site-header .page-title {
+    margin: 0;
+    color: var(--bs-emphasis-color);
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.045em;
+  }
+
+  .site-header > p {
+    margin: 0 3.25rem 0 auto !important;
+    color: var(--bs-secondary-color);
+    font-size: 0.88rem;
+  }
+
+  .site-header > p svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .container {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1720px;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .container > .workspace-card {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    min-height: 0;
+    margin: 0 !important;
+    overflow: hidden;
+    border-radius: 1.1rem !important;
+    box-shadow: 0 0.45rem 1.8rem rgba(0, 0, 0, 0.065) !important;
+  }
+
+  .workspace-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-width: 0;
+    min-height: 0;
+    padding: clamp(0.75rem, 1.5vw, 1.5rem) !important;
+  }
+
+  .workspace-stage .dropzone {
+    display: flex;
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    max-height: calc(100dvh - 8.4rem);
+  }
+
+  .workspace-stage .dropzone--accepted {
+    width: fit-content;
+    max-width: 100%;
+    height: auto;
+    max-height: calc(100dvh - 8.4rem);
+  }
+
+  .workspace-stage .dropzone::part(dropzone) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    max-height: calc(100dvh - 8.4rem);
+  }
+
+  .workspace-stage .canvas {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 10.2rem);
+    object-fit: contain;
+  }
+
+  .workspace-stage .instructions {
+    width: 100%;
+    min-height: min(20rem, 43vh);
+    height: auto;
+    max-height: calc(100dvh - 10rem);
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 1rem;
+  }
+
+  .workspace-stage .image-crop-controls {
+    flex: 0 0 auto;
+    width: min(100%, 900px);
+    margin-top: 0 !important;
+  }
+
+  .workspace-panel {
+    display: flex;
+    flex: 0 0 34%;
+    flex-direction: column;
+    min-width: 300px;
+    min-height: 0;
+    height: 100%;
+    padding: 1rem !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    background: var(--bs-tertiary-bg);
+  }
+
+  .workspace-panel > details {
+    flex: 0 0 auto;
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.75rem !important;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.85rem;
+    background: var(--bs-body-bg);
+  }
+
+  .workspace-panel > details > summary {
+    display: flex;
+    align-items: center;
+    min-height: 1.8rem;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .workspace-panel > details[open] > summary {
+    margin-bottom: 0.7rem;
+  }
+
+  .workspace-panel > details > .bg-body-tertiary {
+    padding: 0.7rem !important;
+    border-radius: 0.7rem !important;
+    box-shadow: none !important;
+  }
+
+  .workspace-panel .form-control,
+  .workspace-panel .form-select {
+    border-radius: 0.65rem;
+  }
+
+  .workspace-panel .btn {
+    border-radius: 0.65rem;
+  }
+
+  .workspace-panel .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    align-content: start;
+    gap: 0.45rem;
+    max-height: clamp(112px, 17vh, 176px);
+    min-height: 0;
+    padding: 0.35rem 0.1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .workspace-panel .gallery > button {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .workspace-panel .gallery > button > img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border: 1px solid var(--bs-border-color);
+    object-fit: cover;
+  }
+
+  .workspace-panel .textboxes-container {
+    max-height: min(25vh, 230px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .workspace-panel #generateMemeBtn {
+    position: sticky;
+    z-index: 2;
+    bottom: 0;
+    flex: 0 0 auto;
+    min-height: 2.9rem;
+    margin-top: auto !important;
+    border-radius: 0.8rem;
+    box-shadow: 0 -0.35rem 1rem var(--bs-tertiary-bg);
+    font-weight: 650;
+  }
+
+  .container > .row:last-child {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    padding: 0.35rem 0 0;
+    font-size: 0.76rem;
+  }
+}
+
+/* Keep the full editor comfortable on compact screens. */
+@media (max-width: 991.98px), (max-height: 659.98px) {
+  .site-header {
+    margin: 1.5rem 0.75rem 1.25rem;
+  }
+
+  .site-header > img {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .workspace-card {
+    border-radius: 0.9rem !important;
+  }
+
+  .workspace-panel {
+    border-top: 1px solid var(--bs-border-color);
+  }
+
+  .workspace-panel > details {
+    padding: 0.5rem 0.65rem;
+  }
+}
+
+/* Slow, soft theme reveal with a longer, calm finish. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: theme-old-out 1.05s ease both;
+  }
+
+  ::view-transition-new(root) {
+    animation: theme-circle-reveal 1.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .theme-transitioning,
+  .theme-transitioning body,
+  .theme-transitioning .bg-body,
+  .theme-transitioning .bg-body-tertiary {
+    transition:
+      background-color 1.55s cubic-bezier(0.22, 1, 0.36, 1),
+      color 1.25s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 1.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body,
+  main {
+    scroll-behavior: auto !important;
+  }
+}
