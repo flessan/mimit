@@ -1,4 +1,5 @@
-# mimit
+<img width="1376" height="768" alt="image" src="https://github.com/user-attachments/assets/731568d5-6016-4198-a6c4-f6fac7fb2b59" />
+
 
 > A community-driven continuation of [georapbox/meme-generator](https://github.com/georapbox/meme-generator).
 
